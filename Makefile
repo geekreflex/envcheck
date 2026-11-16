@@ -18,7 +18,7 @@ GO_LDFLAGS  := -s -w \
 
 # Keep in sync with nothing else: CI reads this value straight out of this
 # file, so the pinned linter version lives here and only here.
-GOLANGCI_VERSION := v2.6.2
+GOLANGCI_VERSION := v2.15.0
 
 # Applied to release builds and to the Go tools fetched via `go run`. Neither
 # needs cgo, and linking without it is faster and avoids depending on a
