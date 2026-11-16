@@ -4,7 +4,7 @@ package report
 import (
 	"io"
 
-	"github.com/jerrynwosu/envcheck/internal/check"
+	"github.com/geekreflex/envcheck/internal/check"
 )
 
 // Text writes the human-readable report to w.

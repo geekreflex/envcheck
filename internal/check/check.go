@@ -2,8 +2,8 @@
 package check
 
 import (
-	"github.com/jerrynwosu/envcheck/internal/envfile"
-	"github.com/jerrynwosu/envcheck/internal/scanner"
+	"github.com/geekreflex/envcheck/internal/envfile"
+	"github.com/geekreflex/envcheck/internal/scanner"
 )
 
 // Kind classifies a problem found during a check.

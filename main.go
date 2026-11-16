@@ -1,7 +1,13 @@
+// Command envcheck reports environment variables that are missing, unused, or
+// empty across your .env files and your source code.
 package main
 
-import "github.com/jerrynwosu/envcheck/cmd"
+import (
+	"os"
+
+	"github.com/geekreflex/envcheck/cmd"
+)
 
 func main() {
-	cmd.Execute()
+	os.Exit(cmd.Execute())
 }

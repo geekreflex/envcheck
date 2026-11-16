@@ -1,4 +1,4 @@
-module github.com/jerrynwosu/envcheck
+module github.com/geekreflex/envcheck
 
 go 1.26
 

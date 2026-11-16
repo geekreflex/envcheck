@@ -1,7 +1,7 @@
 // Package scanner finds environment variable references in source code.
 package scanner
 
-import "github.com/jerrynwosu/envcheck/internal/config"
+import "github.com/geekreflex/envcheck/internal/config"
 
 // Ref is one use of an environment variable in source code.
 type Ref struct {
