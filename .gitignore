@@ -6,6 +6,7 @@
 
 # Go
 *.out
+coverage.html
 go.work
 go.work.sum
 
@@ -18,3 +19,6 @@ go.work.sum
 .DS_Store
 .idea/
 .vscode/
+*.swp
+*.swo
+*~

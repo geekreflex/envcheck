@@ -1,0 +1,69 @@
+name: Bug report
+description: envcheck reported something wrong, missed something, or crashed
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Never paste real secret values.** envcheck only needs variable
+        *names* to reproduce a problem. Redact anything on the right of an
+        `=` before posting, including in logs and screenshots.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What did envcheck report, and what did you expect instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction
+      description: |
+        The smallest case that shows the problem. Variable names and the
+        relevant source line are usually enough — values are not needed.
+      placeholder: |
+        .env.example contains:
+          DATABASE_URL=
+          REDIS_URL=
+
+        src/lib/cache.ts line 4:
+          const url = process.env.REDIS_URL
+
+        Running: envcheck --ci
+        Reported: nothing
+        Expected: REDIS_URL flagged as declared but unused
+      render: text
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: envcheck version
+      description: Output of `envcheck --version`
+      placeholder: envcheck v0.1.0 (abc123def456) built 2026-01-01T00:00:00Z go1.26.0 darwin/arm64
+    validations:
+      required: true
+
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where did it run?
+      options:
+        - Local machine
+        - GitHub Actions
+        - Other CI
+    validations:
+      required: true
+
+  - type: textarea
+    id: config
+    attributes:
+      label: .envcheck.yaml
+      description: Your config file, if you use one.
+      render: yaml
+    validations:
+      required: false

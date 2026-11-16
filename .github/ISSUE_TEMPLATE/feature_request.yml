@@ -1,0 +1,44 @@
+name: Feature request
+description: Suggest a capability, language, or provider
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: |
+        What breaks today? Describe the situation that cost you time, not the
+        solution you have in mind.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you would like envcheck to do
+    validations:
+      required: true
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind of request
+      options:
+        - New language scanner
+        - New remote provider
+        - Output or reporting change
+        - Configuration
+        - Other
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy
+      description: |
+        envcheck reports variable names and never reads, prints, or transmits
+        values. Requests that require handling secret values will be declined.
+      options:
+        - label: This request does not require envcheck to read or transmit secret values.
+          required: true

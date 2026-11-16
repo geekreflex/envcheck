@@ -1,0 +1,110 @@
+# GoReleaser configuration. Validate changes with `goreleaser check`.
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+version: 2
+
+project_name: envcheck
+
+before:
+  hooks:
+    - go mod tidy
+    - go mod verify
+
+builds:
+  - id: envcheck
+    main: .
+    binary: envcheck
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w
+      - -X github.com/geekreflex/envcheck/internal/buildinfo.version={{ .Version }}
+      - -X github.com/geekreflex/envcheck/internal/buildinfo.commit={{ .FullCommit }}
+      - -X github.com/geekreflex/envcheck/internal/buildinfo.date={{ .CommitDate }}
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    # Reproducible builds: stamp archives with the commit time, not now.
+    mod_timestamp: "{{ .CommitTimestamp }}"
+
+archives:
+  - id: envcheck
+    formats:
+      - tar.gz
+    format_overrides:
+      - goos: windows
+        formats:
+          - zip
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - README.md
+      - LICENSE
+
+checksum:
+  name_template: checksums.txt
+  algorithm: sha256
+
+sboms:
+  - artifacts: archive
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-snapshot"
+
+changelog:
+  sort: asc
+  use: github
+  groups:
+    - title: Features
+      regexp: '^.*?feat(\(.+\))??!?:.+$'
+      order: 0
+    - title: Fixes
+      regexp: '^.*?fix(\(.+\))??!?:.+$'
+      order: 1
+    - title: Performance
+      regexp: '^.*?perf(\(.+\))??!?:.+$'
+      order: 2
+    - title: Other
+      order: 99
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^chore:'
+      - '^ci:'
+      - '^style:'
+      - Merge pull request
+      - Merge branch
+
+release:
+  draft: false
+  prerelease: auto
+  footer: |
+    ---
+    Install: `brew install geekreflex/tap/envcheck` or
+    `go install github.com/geekreflex/envcheck@{{ .Tag }}`
+
+# Homebrew. GoReleaser deprecated `brews` (formulas) in favour of casks, which
+# is now the supported path for prebuilt CLI binaries. GoReleaser strips the
+# Gatekeeper quarantine flag itself, so no post-install hook is needed.
+# Casks are macOS-only; Linux installs via the archives, `go install`, or the
+# GitHub Action.
+homebrew_casks:
+  - name: envcheck
+    repository:
+      owner: geekreflex
+      name: homebrew-tap
+      # The default GITHUB_TOKEN cannot push to another repository.
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    homepage: https://github.com/geekreflex/envcheck
+    description: Catch missing environment variables before they break production
+    license: MIT
+    commit_author:
+      name: geekreflex
+      email: jerrynwosu007@gmail.com
+
+report_sizes: true

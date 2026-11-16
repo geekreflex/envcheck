@@ -1,0 +1,72 @@
+# golangci-lint configuration (schema v2).
+# Pinned version lives in the Makefile (GOLANGCI_VERSION) so local runs and
+# CI always agree.
+version: "2"
+
+run:
+  timeout: 5m
+  tests: true
+
+linters:
+  default: standard
+  enable:
+    - bodyclose      # unclosed HTTP response bodies (remote providers, later)
+    - copyloopvar
+    - errorlint      # correct error wrapping and comparison
+    - goconst
+    - gocritic
+    - gosec
+    - misspell
+    - nilerr
+    - noctx
+    - predeclared
+    - revive
+    - unconvert
+    - usestdlibvars
+    - wastedassign
+    - whitespace
+
+  settings:
+    gocritic:
+      enabled-tags:
+        - diagnostic
+        - performance
+      settings:
+        hugeParam:
+          # Info and config.Config are small immutable value structs that are
+          # copied once per invocation. Passing them by value keeps them free
+          # of aliasing, which is worth more here than the saved copy.
+          sizeThreshold: 160
+    govet:
+      enable:
+        - shadow
+    misspell:
+      locale: UK
+    revive:
+      rules:
+        - name: exported
+        - name: error-strings
+        - name: error-return
+        - name: context-as-argument
+        - name: indent-error-flow
+        - name: var-declaration
+
+  exclusions:
+    presets:
+      - comments
+      - std-error-handling
+    rules:
+      # Tests may hardcode fixture values and repeat literals freely.
+      - path: _test\.go
+        linters:
+          - goconst
+          - gosec
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    goimports:
+      local-prefixes:
+        - github.com/geekreflex/envcheck
