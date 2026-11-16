@@ -3,6 +3,6 @@ contact_links:
   - name: Report a security vulnerability
     url: https://github.com/geekreflex/envcheck/security/advisories/new
     about: Please report vulnerabilities privately, not as a public issue.
-  - name: Question or idea
-    url: https://github.com/geekreflex/envcheck/discussions
-    about: Ask questions and discuss larger changes before opening a PR.
+  - name: Contributing guide
+    url: https://github.com/geekreflex/envcheck/blob/main/CONTRIBUTING.md
+    about: Conventions, the privacy rule, and how to add a scanner or provider.
