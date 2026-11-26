@@ -1,0 +1,140 @@
+name: PR policy
+
+# Enforces CONTRIBUTING.md on every pull request: a Conventional Commits
+# title, a filled-in PR template, and exactly one type label (applied
+# automatically from the title when missing).
+#
+# SECURITY: pull_request_target runs with a token that can write to this
+# repository, even for pull requests from forks. That is safe here only
+# because this workflow never checks out or executes the pull request's
+# code, and reads the title, body and labels as data inside JavaScript,
+# never interpolated into a shell. Do not add a checkout step or a `run:`
+# step that uses ${{ github.event.pull_request.* }}.
+on:
+  pull_request_target:
+    types: [opened, edited, reopened, synchronize, ready_for_review, labeled, unlabeled]
+
+permissions:
+  contents: read
+  pull-requests: read
+  issues: write # labels are applied through the issues API
+
+concurrency:
+  group: pr-policy-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  policy:
+    name: pr-policy
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/github-script@v9
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const problems = [];
+
+            // Conventional Commits type -> the one type label it implies.
+            const TYPES = {
+              feat: 'enhancement',
+              fix: 'bug',
+              docs: 'documentation',
+              perf: 'performance',
+              refactor: 'refactor',
+              test: 'test',
+              ci: 'ci',
+              chore: 'chore',
+              build: 'chore',
+              revert: 'chore',
+            };
+            const TYPE_LABELS = [...new Set(Object.values(TYPES))];
+
+            // --- Title -------------------------------------------------
+            const title = pr.title.trim();
+            const m = /^([a-z]+)(\([a-z0-9][a-z0-9-]*\))?(!)?: \S.*$/.exec(title);
+            const type = m && Object.hasOwn(TYPES, m[1]) ? m[1] : null;
+            const breakingTitle = Boolean(m && m[3]);
+            if (!type) {
+              problems.push(
+                'Title must follow Conventional Commits, e.g. `feat(scanner): detect Deno.env.get`. ' +
+                  `Allowed types: ${Object.keys(TYPES).join(', ')}.`,
+              );
+            }
+
+            // --- Body (skipped for bots such as Dependabot) ------------
+            if (pr.user.type !== 'Bot') {
+              const body = (pr.body || '').replace(/<!--[\s\S]*?-->/g, '').replace(/\r\n/g, '\n');
+              const section = (heading) => {
+                const at = body.indexOf(`## ${heading}`);
+                if (at < 0) return null;
+                const rest = body.slice(at + heading.length + 3);
+                const next = rest.search(/\n## /);
+                return (next < 0 ? rest : rest.slice(0, next)).trim();
+              };
+
+              const what = section('What and why');
+              const checklist = section('Checklist');
+              const breaking = section('Breaking changes');
+
+              if (what === null || checklist === null || breaking === null) {
+                problems.push(
+                  'Use the PR template: the body needs the "What and why", "Checklist" and "Breaking changes" sections.',
+                );
+              }
+              if (what !== null && what.length < 30) {
+                problems.push('Explain the change under "What and why": what it does and what problem it solves.');
+              }
+              if (checklist !== null) {
+                const unchecked = (checklist.match(/^\s*[-*] \[ \]/gm) || []).length;
+                const checked = (checklist.match(/^\s*[-*] \[[xX]\]/gm) || []).length;
+                if (unchecked + checked === 0) {
+                  problems.push('Keep the checklist from the PR template.');
+                } else if (unchecked > 0) {
+                  problems.push(
+                    `${unchecked} checklist item(s) are unchecked. Check every item; if one does not apply, ` +
+                      'check it and add "N/A" with a short reason.',
+                  );
+                }
+              }
+              if (breaking !== null) {
+                if (breaking === '') {
+                  problems.push('Fill in "Breaking changes". Write "None" if there are none.');
+                } else if (breakingTitle && /^none\b/i.test(breaking)) {
+                  problems.push('The title marks this as breaking (`!`), so describe what breaks under "Breaking changes".');
+                }
+              }
+            }
+
+            // --- Labels ------------------------------------------------
+            const labels = new Set(pr.labels.map((l) => l.name));
+            const toAdd = [];
+            if (type && !TYPE_LABELS.some((l) => labels.has(l))) toAdd.push(TYPES[type]);
+            if (breakingTitle && !labels.has('breaking-change')) toAdd.push('breaking-change');
+            if (toAdd.length > 0) {
+              try {
+                await github.rest.issues.addLabels({ ...context.repo, issue_number: pr.number, labels: toAdd });
+                toAdd.forEach((l) => labels.add(l));
+                core.info(`Added labels: ${toAdd.join(', ')}`);
+              } catch (err) {
+                core.warning(`Could not add labels ${toAdd.join(', ')}: ${err.message}`);
+              }
+            }
+            const typeLabels = TYPE_LABELS.filter((l) => labels.has(l));
+            if (typeLabels.length === 0) {
+              problems.push(`Add one type label: ${TYPE_LABELS.join(', ')}.`);
+            } else if (typeLabels.length > 1) {
+              problems.push(`Use exactly one type label; this PR has ${typeLabels.join(', ')}.`);
+            }
+
+            // --- Result ------------------------------------------------
+            if (problems.length > 0) {
+              await core.summary
+                .addHeading('PR policy: changes needed', 3)
+                .addList(problems)
+                .addRaw('See CONTRIBUTING.md, "Pull requests". Edit the title, body or labels and this check re-runs.')
+                .write();
+              core.setFailed(problems.join('\n'));
+            } else {
+              await core.summary.addRaw('PR policy: all checks passed.').write();
+            }

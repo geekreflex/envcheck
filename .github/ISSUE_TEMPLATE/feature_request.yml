@@ -1,6 +1,6 @@
 name: Feature request
 description: Suggest a capability, language, or provider
-labels: [enhancement]
+labels: [enhancement, needs-triage]
 body:
   - type: textarea
     id: problem
