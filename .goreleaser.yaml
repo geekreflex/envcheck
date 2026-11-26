@@ -89,10 +89,14 @@ release:
     `go install github.com/geekreflex/envcheck@{{ .Tag }}`
 
 # Homebrew. GoReleaser deprecated `brews` (formulas) in favour of casks, which
-# is now the supported path for prebuilt CLI binaries. GoReleaser strips the
-# Gatekeeper quarantine flag itself, so no post-install hook is needed.
-# Casks are macOS-only; Linux installs via the archives, `go install`, or the
-# GitHub Action.
+# is now the supported path for prebuilt CLI binaries.
+#
+# The binaries are ad-hoc signed by the Go linker but not notarized by Apple.
+# Homebrew marks cask downloads with com.apple.quarantine, and macOS kills an
+# un-notarized quarantined binary at launch ("killed", exit 137). The
+# post-install hook removes the flag from the one binary this cask installs,
+# whose checksum Homebrew has already verified. Notarizing the binaries
+# (Apple Developer ID) would make the hook unnecessary.
 homebrew_casks:
   - name: envcheck
     repository:
@@ -103,6 +107,12 @@ homebrew_casks:
     homepage: https://github.com/geekreflex/envcheck
     description: Catch missing environment variables before they break production
     license: MIT
+    hooks:
+      post:
+        install_steps: |
+          on_macos do
+            run "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "{{ .StagedPath }}/envcheck"]
+          end
     commit_author:
       name: geekreflex
       email: jerrynwosu007@gmail.com
