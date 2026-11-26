@@ -1,0 +1,26 @@
+name: Triage
+
+# Every issue needs at least one label. The issue forms apply one already;
+# this catches issues opened another way (the API, the CLI, a transfer).
+on:
+  issues:
+    types: [opened, transferred]
+
+permissions:
+  issues: write
+
+jobs:
+  label:
+    name: needs-triage
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: github.event.issue.labels[0] == null
+    steps:
+      - uses: actions/github-script@v9
+        with:
+          script: |
+            await github.rest.issues.addLabels({
+              ...context.repo,
+              issue_number: context.payload.issue.number,
+              labels: ['needs-triage'],
+            });
