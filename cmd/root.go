@@ -5,11 +5,18 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 
 	"github.com/geekreflex/envcheck/internal/buildinfo"
+	"github.com/geekreflex/envcheck/internal/check"
+	"github.com/geekreflex/envcheck/internal/config"
+	"github.com/geekreflex/envcheck/internal/envfile"
+	"github.com/geekreflex/envcheck/internal/report"
+	"github.com/geekreflex/envcheck/internal/scanner"
 )
 
 // Exit codes. These are a public contract: CI pipelines branch on them, so
@@ -89,7 +96,7 @@ logged, or sent anywhere.`,
 			if len(args) > 0 {
 				dir = args[0]
 			}
-			return check(dir, opts, stdout)
+			return runCheck(dir, opts, stdout, stderr)
 		},
 	}
 
@@ -118,10 +125,80 @@ func (e *problemsError) Error() string {
 	return fmt.Sprintf("%d problems found", e.count)
 }
 
-// check runs the default end-to-end check against dir.
-func check(dir string, opts options, stdout io.Writer) error {
-	// TODO: load config, parse both env files, scan dir, diff, report.
-	_ = stdout
-	return fmt.Errorf("not implemented yet (dir %q, example %q, env %q, ci=%t, json=%t, config %q)",
-		dir, opts.example, opts.env, opts.ci, opts.json, opts.config)
+// runCheck runs the default end-to-end check against dir.
+func runCheck(dir string, opts options, stdout, stderr io.Writer) error {
+	info, err := os.Stat(dir)
+	if err != nil {
+		var pe *fs.PathError
+		if errors.As(err, &pe) {
+			err = pe.Err // its message would repeat the path
+		}
+		return fmt.Errorf("reading %s: %w", dir, err)
+	}
+	if !info.IsDir() {
+		return fmt.Errorf("%s is not a directory", dir)
+	}
+
+	cfg, err := config.Load(dir, opts.config)
+	if err != nil {
+		return err
+	}
+
+	// Flags are paths as the user typed them; config values are relative
+	// to the project directory.
+	examplePath := pick(opts.example, filepath.Join(dir, cfg.Example))
+	envPath := pick(opts.env, filepath.Join(dir, cfg.Env))
+
+	example, err := envfile.Parse(examplePath)
+	if errors.Is(err, fs.ErrNotExist) {
+		return fmt.Errorf("%w (create it, or point to it with --example)", err)
+	}
+	if err != nil {
+		return err
+	}
+
+	// A missing .env is normal in CI, where variables come from the
+	// platform. Only an explicitly requested file must exist.
+	env, err := envfile.Parse(envPath)
+	if errors.Is(err, fs.ErrNotExist) && opts.env == "" {
+		env = nil
+		fmt.Fprintf(stderr, "envcheck: no %s found; skipping missing and empty value checks\n", envPath)
+	} else if err != nil {
+		return err
+	}
+
+	scan, err := scanner.Walk(dir, cfg)
+	if err != nil {
+		return err
+	}
+
+	res := check.Run(check.Input{
+		Example:      example,
+		Env:          env,
+		Refs:         scan.Refs,
+		ScannedFiles: scan.Files,
+		Ignore:       cfg.Ignore,
+	})
+
+	if opts.json {
+		err = report.JSON(stdout, res)
+	} else {
+		err = report.Text(stdout, res, report.Files{Example: examplePath, Env: envPath})
+	}
+	if err != nil {
+		return fmt.Errorf("writing report: %w", err)
+	}
+
+	if opts.ci && !res.OK() {
+		return &problemsError{count: len(res.Problems)}
+	}
+	return nil
+}
+
+// pick returns flag when it was set, otherwise fallback.
+func pick(flag, fallback string) string {
+	if flag != "" {
+		return flag
+	}
+	return fallback
 }
