@@ -78,14 +78,49 @@ Treat these as breaking, because people automate against them:
 - Flag names and defaults
 - `.envcheck.yaml` keys
 
-## Commits and PRs
+## Issues
 
-Conventional prefixes, because release notes are generated from them:
-`feat:`, `fix:`, `perf:`, `docs:`, `test:`, `refactor:`, `chore:`, `ci:`.
-Only the first three appear in the changelog.
+Open issues with one of the forms (bug, feature, documentation, question);
+blank issues are disabled. Each form applies a type label and
+`needs-triage`, which a maintainer replaces once the issue is reviewed.
+**Never paste secret values**: variable names reproduce every envcheck bug.
 
-Keep PRs focused on one change. Fill in the template, especially the privacy
-checkbox.
+## Pull requests
+
+Keep each PR focused on one change, and open an issue first for anything
+substantial. A `pr-policy` check enforces the rules below. Edit the title,
+body, or labels and the check re-runs.
+
+- **Title.** Conventional Commits: `type(scope): summary`, lowercase type,
+  scope optional. The squash-merge commit uses the PR title, and release
+  notes are generated from it.
+
+  | Type | Use for | Label applied | In release notes |
+  | --- | --- | --- | --- |
+  | `feat` | new behaviour | `enhancement` | yes |
+  | `fix` | bug fix | `bug` | yes |
+  | `perf` | faster, same behaviour | `performance` | yes |
+  | `docs` | documentation only | `documentation` | no |
+  | `refactor` | no behaviour change | `refactor` | no |
+  | `test` | tests only | `test` | no |
+  | `ci` | workflows, release automation | `ci` | no |
+  | `chore`, `build`, `revert` | maintenance | `chore` | no |
+
+  Mark a breaking change with `!` (`feat(cli)!: ...`) and describe it under
+  "Breaking changes". The `breaking-change` label is added automatically.
+- **Body.** Fill in the template: what and why, every checklist item
+  checked (check and write "N/A" with a reason when one does not apply), and
+  "Breaking changes", which can be "None".
+- **Labels.** Exactly one type label, applied from the title. Add an
+  `area: ...` label if you can; a maintainer will otherwise.
+- **CI.** All checks must pass, across Linux, macOS, and Windows.
+
+### Merging
+
+`main` is protected: nobody pushes to it directly, and changes land through
+pull requests only. The maintainer reviews and merges every PR, as a squash
+merge, and the branch is deleted afterwards. Please don't force-push after a
+review has started, because it hides what changed since the review.
 
 ## Security
 
