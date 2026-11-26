@@ -93,15 +93,20 @@ in `All()`, and extend the table in `scanner_test.go`.
 - `.gitignore` ignores `.env` and `.env.*` but re-includes `.env.example`. Do
   not commit a real `.env`, including in test fixtures; put fixtures under
   `testdata/`.
-- The default scan excludes `node_modules/**`, `.git/**`, and `vendor/**`.
-  Scanning them is slow and produces false positives.
+- The default scan excludes dependency and build trees at any depth
+  (`**/node_modules/**`, `**/.git/**`, `**/vendor/**`, `**/dist/**`, `**/.next/**`,
+  ...). Scanning them is slow, and compiled bundles inline `process.env`
+  reads the user never wrote. Config `scan.exclude` and `ignore` *add to* the
+  defaults; `scan.include` replaces them.
+- Scanners must reject matches inside comments and string literals. The
+  shared lexer in `internal/scanner/source.go` (`prepare`) handles that for
+  C-like languages; reuse it rather than writing another.
 - `buildinfo` variables are set by `-ldflags`; they are intentionally
   unexported and lowercase. Do not rename without updating the Makefile and
   `.goreleaser.yaml` together.
 
 ## Current state
 
-The CLI skeleton, exit-code policy, build metadata, and package boundaries
-are in place. The parsing, scanning, comparison, and reporting bodies are
-stubs marked `TODO`. `envcheck` currently exits `2` with "not implemented
-yet". See the Roadmap in README.md for the intended order of work.
+v1 works end to end: parse, scan (JS/TS and Go), compare, report (text and
+JSON), `.envcheck.yaml`, and `--ci`. No release has been tagged yet. Remote
+providers are next on the Roadmap in README.md.
