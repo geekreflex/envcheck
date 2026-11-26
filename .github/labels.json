@@ -1,0 +1,31 @@
+[
+  { "name": "bug", "color": "d73a4a", "description": "Type: something isn't working (fix:)" },
+  { "name": "enhancement", "color": "a2eeef", "description": "Type: new feature or request (feat:)" },
+  { "name": "documentation", "color": "0075ca", "description": "Type: documentation only (docs:)" },
+  { "name": "performance", "color": "fbca04", "description": "Type: faster or leaner, same behaviour (perf:)" },
+  { "name": "refactor", "color": "c5def5", "description": "Type: restructuring with no behaviour change (refactor:)" },
+  { "name": "test", "color": "bfd4f2", "description": "Type: tests only (test:)" },
+  { "name": "ci", "color": "1d76db", "description": "Type: CI, workflows, and release automation (ci:)" },
+  { "name": "chore", "color": "ededed", "description": "Type: maintenance, tooling, repo config (chore:, build:, revert:)" },
+
+  { "name": "breaking-change", "color": "b60205", "description": "Changes a public contract: exit codes, JSON output, flags, or config keys" },
+  { "name": "security", "color": "ee0701", "description": "Security or privacy: anything near the names-only rule" },
+  { "name": "dependencies", "color": "0366d6", "description": "Dependency update" },
+
+  { "name": "area: envfile", "color": "5319e7", "description": "The .env parser" },
+  { "name": "area: scanner", "color": "5319e7", "description": "Language scanners and the source walk" },
+  { "name": "area: check", "color": "5319e7", "description": "Comparison logic" },
+  { "name": "area: report", "color": "5319e7", "description": "Text and JSON output" },
+  { "name": "area: cli", "color": "5319e7", "description": "Flags, exit codes, command wiring" },
+  { "name": "area: config", "color": "5319e7", "description": ".envcheck.yaml" },
+  { "name": "area: install", "color": "5319e7", "description": "Install script, Homebrew, release artefacts" },
+
+  { "name": "needs-triage", "color": "fef2c0", "description": "Waiting for a maintainer to review and label" },
+  { "name": "blocked", "color": "e99695", "description": "Waiting on something outside this issue or PR" },
+  { "name": "question", "color": "d876e3", "description": "Further information is requested" },
+  { "name": "good first issue", "color": "7057ff", "description": "Good for newcomers" },
+  { "name": "help wanted", "color": "008672", "description": "Extra attention is needed" },
+  { "name": "duplicate", "color": "cfd3d7", "description": "This issue or pull request already exists" },
+  { "name": "invalid", "color": "e4e669", "description": "This doesn't seem right" },
+  { "name": "wontfix", "color": "ffffff", "description": "This will not be worked on" }
+]

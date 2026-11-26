@@ -1,0 +1,19 @@
+name: Documentation
+description: Something in the README or docs is wrong, unclear, or missing
+labels: [documentation, needs-triage]
+body:
+  - type: input
+    id: where
+    attributes:
+      label: Where
+      description: A link to the section or file, e.g. README "Configuration".
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is wrong or missing
+      description: What did you expect to find, and what did the docs say instead?
+    validations:
+      required: true

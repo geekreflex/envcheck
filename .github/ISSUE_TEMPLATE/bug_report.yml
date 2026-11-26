@@ -1,6 +1,6 @@
 name: Bug report
 description: envcheck reported something wrong, missed something, or crashed
-labels: [bug]
+labels: [bug, needs-triage]
 body:
   - type: markdown
     attributes:
