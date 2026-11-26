@@ -1,0 +1,25 @@
+name: Question
+description: Ask how to use envcheck or why it behaves a certain way
+labels: [question, needs-triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Check the README first, especially "What it reports" and
+        "Configuration". **Never paste real secret values**: variable names
+        are enough.
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Your question
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: envcheck version
+      description: Output of `envcheck --version`, if relevant.
+    validations:
+      required: false
