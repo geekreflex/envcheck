@@ -11,6 +11,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"strings"
 )
@@ -75,11 +76,21 @@ const (
 func Parse(path string) (*File, error) {
 	f, err := os.Open(path) //nolint:gosec // G304: reading the user-named env file is the purpose
 	if err != nil {
-		return nil, fmt.Errorf("reading %s: %w", path, err)
+		return nil, fmt.Errorf("reading %s: %w", path, unwrapPath(err))
 	}
 	defer f.Close() //nolint:errcheck // read-only; close error carries no data loss
 
 	return parse(path, f)
+}
+
+// unwrapPath drops the *fs.PathError wrapper, whose message repeats the
+// path the caller already names. The cause (fs.ErrNotExist etc.) is kept.
+func unwrapPath(err error) error {
+	var pe *fs.PathError
+	if errors.As(err, &pe) {
+		return pe.Err
+	}
+	return err
 }
 
 // parse does the work of Parse on any reader; path is used only for
