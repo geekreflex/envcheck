@@ -70,15 +70,15 @@ changelog:
       order: 2
     - title: Other
       order: 99
+  # Release notes list feat, fix and perf only (see CONTRIBUTING.md). These
+  # patterns match the bare commit message, with or without a scope, so
+  # "ci(github): ..." is dropped as well as "ci: ...". A breaking change
+  # ("chore!: ...") has no plain colon after the type and is kept.
   filters:
     exclude:
-      - '^docs:'
-      - '^test:'
-      - '^chore:'
-      - '^ci:'
-      - '^style:'
-      - Merge pull request
-      - Merge branch
+      - '^(docs|test|chore|ci|style|refactor|build|revert)(\([^)]*\))?:'
+      - '^Merge pull request'
+      - '^Merge branch'
 
 release:
   draft: false
