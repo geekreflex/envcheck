@@ -76,6 +76,15 @@ curl -sSfL https://raw.githubusercontent.com/geekreflex/envcheck/main/install.sh
 brew install geekreflex/tap/envcheck
 ```
 
+If macOS kills `envcheck` as soon as it starts (your shell prints `killed`),
+you installed v0.1.0, whose cask left macOS's download quarantine flag on the
+binary. Run `brew upgrade envcheck` to get a fixed version, or clear the flag
+yourself:
+
+```bash
+xattr -d com.apple.quarantine "$(brew --caskroom)/envcheck/0.1.0/envcheck"
+```
+
 ### Go
 
 Requires Go 1.26 or newer:
